@@ -1,6 +1,10 @@
 # Rating Sync (Emby plugin)
 
-Refreshes **community ratings (IMDb)** and **critic ratings (Rotten Tomatoes)** for your library items, with smart scanning, rate limiting, progress tracking, and scan history.
+[![CI](https://github.com/pejamas/rating-sync/actions/workflows/ci.yml/badge.svg)](https://github.com/pejamas/rating-sync/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/pejamas/rating-sync?include_prereleases=true&sort=semver)](https://github.com/pejamas/rating-sync/releases)
+[![License](https://img.shields.io/github/license/pejamas/rating-sync)](LICENSE)
+
+Sync **IMDb community ratings** and **Rotten Tomatoes critic ratings** into Emby metadata, with smart scanning, rate limiting, progress tracking, and scan history.
 
 ## Features
 
@@ -18,6 +22,22 @@ Refreshes **community ratings (IMDb)** and **critic ratings (Rotten Tomatoes)** 
 2. Copy it into your Emby plugins folder (commonly `...\Emby-Server\programdata\plugins\`).
 3. Restart Emby Server.
 4. Configure API keys in Emby Dashboard → Plugins → Rating Sync.
+
+## Screenshots
+
+Add your screenshots to `docs/screenshots/` (see `docs/screenshots/README.md`). Once those files exist, this gallery will render on GitHub.
+
+| Settings | Run |
+| --- | --- |
+| ![Settings](docs/screenshots/settings.png) | ![Run](docs/screenshots/run.png) |
+
+| Smart scanning | History |
+| --- | --- |
+| ![Smart scanning](docs/screenshots/smart-scanning.png) | ![History](docs/screenshots/history.png) |
+
+| Scan report |
+| --- |
+| ![Scan report](docs/screenshots/scan-report.png) |
 
 ## Build
 
