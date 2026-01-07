@@ -15,6 +15,7 @@ Sync **IMDb community ratings** and **Rotten Tomatoes critic ratings** into Emby
 - **Smart scanning**: rescan interval, prioritize recently added, skip already-rated (optional)
 - **Progress API** + detailed results (updated/skipped/errors)
 - **Scan history** + per-session reports
+- Missing data views (e.g., missing IMDb id / ratings) and item-level scan history
 
 ## Install
 
@@ -23,21 +24,46 @@ Sync **IMDb community ratings** and **Rotten Tomatoes critic ratings** into Emby
 3. Restart Emby Server.
 4. Configure API keys in Emby Dashboard → Plugins → Rating Sync.
 
-## Screenshots
+## Quick start
 
-Add your screenshots to `docs/screenshots/` (see `docs/screenshots/README.md`). Once those files exist, this gallery will render on GitHub.
+1. Add at least one API key (OMDb and/or MDBList).
+2. Pick your preferred rating source and what item types to update.
+3. (Optional) Enable episode scraping fallback if you want episode ratings.
+4. Go to the **Run** tab and start a refresh.
 
-| Settings | Run |
-| --- | --- |
-| ![Settings](docs/screenshots/settings.png) | ![Run](docs/screenshots/run.png) |
+## UI tour
 
-| Smart scanning | History |
-| --- | --- |
-| ![Smart scanning](docs/screenshots/smart-scanning.png) | ![History](docs/screenshots/history.png) |
+### Settings
 
-| Scan report |
-| --- |
-| ![Scan report](docs/screenshots/scan-report.png) |
+Configure API keys, rating sources, item types, and rate limiting.
+
+<img src="docs/screenshots/settings.png" alt="Rating Sync settings" width="900" />
+
+### Smart scanning
+
+Avoid redundant API calls by controlling how often items are rescanned and prioritizing recently added content.
+
+<img src="docs/screenshots/smart-scanning.png" alt="Smart scanning" width="900" />
+
+### Run
+
+Trigger a refresh manually. You can run it for an entire library, or target a specific series/season/episode.
+
+<img src="docs/screenshots/run.png" alt="Run rating refresh" width="900" />
+
+### Scan report
+
+After a scan, open the report for a detailed breakdown (updated/skipped/errors, API usage, and searchable results).
+
+<img src="docs/screenshots/scan-report.png" alt="Scan report" width="900" />
+
+### History
+
+Browse recent scans, find items with missing data, and inspect item-level scan history.
+
+<img src="docs/screenshots/history.png" alt="Scan history" width="900" />
+
+> Screenshot files live in `docs/screenshots/`.
 
 ## Build
 
