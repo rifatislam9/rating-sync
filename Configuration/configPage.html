@@ -1,0 +1,645 @@
+<div is="emby-scroller"
+    data-controller="configurationpage?name=RatingSyncConfigurationjs"
+    class="view flex flex-direction-column scrollFrameY flex-grow"
+    data-horizontal="false"
+    data-forcescrollbar="true"
+    data-centerfocus="true"
+    data-bindheader="true"
+    data-title="Rating Sync">
+    
+    <style>
+        .imdb-config .sectionTitle { margin-bottom: 0.5em; }
+        .imdb-config .fieldDescription { margin-top: 0.3em; color: rgba(255,255,255,0.6); font-size: 0.9em; }
+        .imdb-config .inputContainer { margin-bottom: 1.5em; }
+        .imdb-config .selectContainer { margin-bottom: 1.5em; }
+        .imdb-config .checkboxContainer { margin-bottom: 0.8em; }
+        .imdb-config .verticalSection { margin-bottom: 2em; }
+        .imdb-config .noteBox { background: rgba(232,124,3,0.2); border: 1px solid rgba(232,124,3,0.5); padding: 1em; border-radius: 4px; margin-bottom: 1em; }
+        .imdb-config .noteBox strong { color: #e87c03; }
+        .imdb-config .infoBox { background: rgba(0,164,220,0.15); border: 1px solid rgba(0,164,220,0.4); padding: 1em; border-radius: 4px; margin-bottom: 1em; }
+        .imdb-config .infoBox strong { color: #00a4dc; }
+        .imdb-config .localnav { margin-bottom: 0.6em; display: flex; gap: 0.5em; flex-wrap: wrap; }
+        .imdb-config .nav-button { padding: 0.6em 1.2em; border-radius: 6px; background: rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: flex-start; gap: 0.25em; min-width: 150px; }
+        .imdb-config .nav-button.ui-btn-active { background: #00a4dc; }
+        .imdb-config .navTitle { font-weight: 600; }
+        .imdb-config .navSub { font-size: 0.76em; color: rgba(255,255,255,0.72); line-height: 1.2; }
+        .imdb-config .navSub .apiBadge { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.2em 0.55em; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); background: rgba(0,0,0,0.20); margin-right: 0.4em; }
+        .imdb-config .navSub .apiDot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.45); }
+        .imdb-config .navSub .apiDot.omdb { background: rgba(82,196,26,0.95); }
+        .imdb-config .navSub .apiDot.mdblist { background: rgba(250,173,20,0.95); }
+        .imdb-config .navSub .apiDot.imdb { background: rgba(163,89,255,0.95); }
+
+        .imdb-config .apiCountersBar { margin: 0 0 1.5em 0; padding: 0.65em 0.9em; border-radius: 8px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.06); }
+        .imdb-config .apiCountersBar .apiCountersText { font-size: 0.85em; color: rgba(255,255,255,0.78); line-height: 1.25; }
+        .imdb-config .apiCountersBar .apiBadge { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.2em 0.55em; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); background: rgba(0,0,0,0.20); margin-right: 0.4em; }
+        .imdb-config .apiCountersBar .apiDot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.45); }
+        .imdb-config .apiCountersBar .apiDot.omdb { background: rgba(82,196,26,0.95); }
+        .imdb-config .apiCountersBar .apiDot.mdblist { background: rgba(250,173,20,0.95); }
+        .imdb-config .apiCountersBar .apiDot.imdb { background: rgba(163,89,255,0.95); }
+        .imdb-config .tabPage { display: none; }
+        .imdb-config .tabPage.active { display: block; }
+        
+        /* Improved Progress Section Styles */
+        .imdb-config .progressSection { margin-top: 1.5em; padding: 1.5em; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .imdb-config .progressHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; }
+        .imdb-config .progressBar { width: 100%; height: 28px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; margin: 0.5em 0 1em 0; position: relative; }
+        .imdb-config .progressBarFill { height: 100%; background: linear-gradient(90deg, #00a4dc 0%, #00d4dc 100%); transition: width 0.3s ease; }
+        .imdb-config .progressBarText { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        
+        /* Stats Grid */
+        .imdb-config .statsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75em; margin: 1em 0; }
+        @media (max-width: 600px) { .imdb-config .statsGrid { grid-template-columns: repeat(2, 1fr); } }
+        .imdb-config .statBox { padding: 1em; background: rgba(0,0,0,0.4); border-radius: 6px; text-align: center; border-left: 3px solid #00a4dc; }
+        .imdb-config .statBox.updated { border-left-color: #52c41a; }
+        .imdb-config .statBox.skipped { border-left-color: #faad14; }
+        .imdb-config .statBox.errors { border-left-color: #f5222d; }
+        .imdb-config .statNumber { font-size: 2em; font-weight: bold; color: #fff; line-height: 1.2; }
+        .imdb-config .statLabel { font-size: 0.8em; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* Current Item Display */
+        .imdb-config .currentItemBox { margin: 1em 0; padding: 0.75em 1em; background: rgba(0,164,220,0.15); border-radius: 4px; border-left: 3px solid #00a4dc; }
+        .imdb-config .currentItemLabel { font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25em; }
+        .imdb-config .currentItemName { font-size: 0.95em; color: #fff; word-break: break-word; }
+        
+        /* ETA Display */
+        .imdb-config .etaBox { display: inline-flex; align-items: center; gap: 0.5em; padding: 0.4em 0.8em; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.85em; color: rgba(255,255,255,0.7); }
+        .imdb-config .etaLabel { color: rgba(255,255,255,0.5); }
+        
+        /* Status Badge */
+        .imdb-config .statusBadge { display: inline-flex; align-items: center; gap: 0.5em; padding: 0.4em 0.8em; border-radius: 20px; font-size: 0.85em; font-weight: 500; }
+        .imdb-config .statusBadge.idle { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+        .imdb-config .statusBadge.running { background: rgba(0,164,220,0.3); color: #00d4dc; }
+        .imdb-config .statusBadge.completed { background: rgba(82,196,26,0.3); color: #52c41a; }
+        .imdb-config .statusBadge.error { background: rgba(245,34,45,0.3); color: #f5222d; }
+        .imdb-config .statusDot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .imdb-config .statusBadge.running .statusDot { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        /* Result Lists */
+        .imdb-config .resultSection { margin-top: 1.5em; }
+        .imdb-config .resultTabs { display: flex; gap: 0.5em; margin-bottom: 0; }
+        .imdb-config .resultTab { padding: 0.5em 1em; background: rgba(255,255,255,0.1); border-radius: 4px 4px 0 0; cursor: pointer; font-size: 0.85em; border: none; color: rgba(255,255,255,0.7); }
+        .imdb-config .resultTab.active { background: rgba(0,0,0,0.4); color: #fff; }
+        .imdb-config .resultTab .badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 10px; font-size: 0.85em; margin-left: 0.5em; }
+        .imdb-config .resultTab.success .badge { background: rgba(82,196,26,0.3); color: #52c41a; }
+        .imdb-config .resultTab.skipped .badge { background: rgba(250,173,20,0.3); color: #faad14; }
+        .imdb-config .resultTab.failure .badge { background: rgba(245,34,45,0.3); color: #f5222d; }
+        
+        .imdb-config .resultContainer { max-height: 350px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 0 6px 6px 6px; }
+        .imdb-config .resultList { padding: 0; margin: 0; list-style: none; }
+        .imdb-config .resultItem { padding: 0.75em 1em; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: flex-start; gap: 1em; }
+        .imdb-config .resultItem:last-child { border-bottom: none; }
+        .imdb-config .resultItem:hover { background: rgba(255,255,255,0.03); }
+        .imdb-config .resultItemName { flex: 1; font-size: 0.9em; word-break: break-word; }
+        .imdb-config .resultItemDetail { font-size: 0.85em; color: rgba(255,255,255,0.5); max-width: 50%; text-align: right; }
+        .imdb-config .resultItem.success .resultItemDetail { color: #52c41a; }
+        .imdb-config .resultItem.skipped .resultItemDetail { color: #faad14; }
+        .imdb-config .resultItem.failure .resultItemDetail { color: #f5222d; }
+        
+        .imdb-config .resultEmpty { padding: 2em; text-align: center; color: rgba(255,255,255,0.4); font-style: italic; }
+        
+        /* Library Selection */
+        .imdb-config .selectionGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1em; margin-bottom: 1.5em; }
+        @media (max-width: 600px) { .imdb-config .selectionGrid { grid-template-columns: 1fr; } }
+        .imdb-config .selectionBox { padding: 1em; background: rgba(0,0,0,0.2); border-radius: 6px; }
+        .imdb-config .selectionBox h4 { margin: 0 0 0.75em 0; font-size: 0.9em; color: rgba(255,255,255,0.7); }
+        
+        /* Buttons */
+        .imdb-config .buttonGroup { display: flex; gap: 0.5em; flex-wrap: wrap; margin: 0.5em 0 1.5em 0; }
+        .imdb-config .btn-primary { background: #00a4dc !important; }
+        .imdb-config .btn-danger { background: #f5222d !important; }
+        .imdb-config .btn-secondary { background: rgba(255,255,255,0.1) !important; }
+        
+        /* History Page Styles */
+        .imdb-config .historySection { margin-bottom: 1.5em; }
+        .imdb-config .historySection h3 { margin: 0 0 1em 0; font-size: 1.1em; color: rgba(255,255,255,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5em; }
+        
+        .imdb-config .sessionList { max-height: 400px; overflow-y: auto; }
+        .imdb-config .sessionCard { padding: 1em; background: rgba(0,0,0,0.3); border-radius: 6px; margin-bottom: 0.75em; border-left: 3px solid #00a4dc; cursor: pointer; }
+        .imdb-config .sessionCard.cancelled { border-left-color: #faad14; }
+        .imdb-config .sessionCard.hasErrors { border-left-color: #f5222d; }
+        .imdb-config .sessionCard:hover { background: rgba(0,0,0,0.38); }
+        .imdb-config .sessionHeader { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75em; margin-bottom: 0.5em; }
+        .imdb-config .sessionHeaderLeft { flex: 1; min-width: 0; }
+        .imdb-config .sessionHeaderRight { display: flex; align-items: center; gap: 0.6em; flex: 0 0 auto; }
+        .imdb-config .sessionDate { font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .imdb-config .sessionDuration { font-size: 0.85em; color: rgba(255,255,255,0.55); white-space: nowrap; }
+        .imdb-config .sessionDeleteBtn { font-size: 0.78em; padding: 0.2em 0.55em; line-height: 1.2; border-radius: 999px; border: 1px solid rgba(245,34,45,0.35); background: rgba(245,34,45,0.10); color: rgba(255,255,255,0.85); cursor: pointer; }
+        .imdb-config .sessionDeleteBtn:hover { background: rgba(245,34,45,0.18); }
+        .imdb-config .sessionDeleteBtn:focus { outline: none; box-shadow: 0 0 0 3px rgba(245,34,45,0.15); }
+        .imdb-config .sessionStats { display: flex; gap: 1.5em; flex-wrap: wrap; }
+        .imdb-config .sessionStat { font-size: 0.85em; }
+        .imdb-config .sessionStat .label { color: rgba(255,255,255,0.5); }
+        .imdb-config .sessionStat .value { color: #fff; font-weight: 500; }
+        .imdb-config .sessionStat.updated .value { color: #52c41a; }
+        .imdb-config .sessionStat.skipped .value { color: #faad14; }
+        .imdb-config .sessionStat.errors .value { color: #f5222d; }
+        .imdb-config .sessionCta { margin-top: 0.75em; display: flex; justify-content: flex-end; font-size: 0.85em; color: rgba(255,255,255,0.45); }
+        .imdb-config .sessionCta span { color: rgba(0,212,220,0.9); }
+        .imdb-config .sessionCta .arrow { margin-left: 0.25em; opacity: 0.9; }
+
+        /* Scan report modal */
+        .imdb-config .rs-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .imdb-config .rs-modal.hide { display: none !important; }
+        .imdb-config .rs-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.65); }
+        .imdb-config .rs-modal-content { position: relative; width: min(980px, calc(100vw - 2.5em)); max-height: calc(100vh - 2.5em); background: rgba(20, 24, 28, 0.98); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; box-shadow: 0 16px 50px rgba(0,0,0,0.6); }
+        .imdb-config .rs-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 1em; padding: 1em 1.2em; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .imdb-config .rs-modal-title { margin: 0; font-size: 1.1em; color: #fff; }
+        .imdb-config .rs-modal-actions { display: flex; gap: 0.5em; flex-wrap: wrap; }
+        .imdb-config .rs-modal-body { padding: 1em 1.2em; overflow: auto; max-height: calc(100vh - 8em); }
+        .imdb-config .reportMeta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75em; margin-bottom: 1em; }
+        @media (max-width: 700px) { .imdb-config .reportMeta { grid-template-columns: 1fr; } }
+        .imdb-config .reportMetaBox { padding: 0.85em; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden; }
+        .imdb-config .reportMetaBox::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: rgba(0,212,220,0.55); }
+        .imdb-config .reportMetaBox.tone-updated::before { background: rgba(82,196,26,0.95); }
+        .imdb-config .reportMetaBox.tone-skipped::before { background: rgba(250,173,20,0.95); }
+        .imdb-config .reportMetaBox.tone-errors::before { background: rgba(245,34,45,0.95); }
+        .imdb-config .reportMetaBox.tone-status::before { background: rgba(163,89,255,0.90); }
+        .imdb-config .reportMetaBox.tone-time::before { background: rgba(0,212,220,0.75); }
+        .imdb-config .reportMetaLabel { font-size: 0.75em; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 0.35em; }
+        .imdb-config .reportMetaValue { font-size: 0.95em; color: rgba(255,255,255,0.9); word-break: break-word; }
+        .imdb-config .reportSection { margin-top: 1.25em; }
+        .imdb-config .reportSection h4 { margin: 0 0 0.5em 0; font-size: 0.95em; color: rgba(255,255,255,0.85); }
+        .imdb-config .reportH { display: flex; align-items: center; gap: 0.55em; }
+        .imdb-config .reportH::before { content: ''; width: 10px; height: 10px; border-radius: 999px; background: rgba(0,212,220,0.75); box-shadow: 0 0 0 3px rgba(0,212,220,0.12); }
+        .imdb-config .reportH.tone-updated::before { background: rgba(82,196,26,0.95); box-shadow: 0 0 0 3px rgba(82,196,26,0.12); }
+        .imdb-config .reportH.tone-skipped::before { background: rgba(250,173,20,0.95); box-shadow: 0 0 0 3px rgba(250,173,20,0.12); }
+        .imdb-config .reportH.tone-errors::before { background: rgba(245,34,45,0.95); box-shadow: 0 0 0 3px rgba(245,34,45,0.12); }
+
+        .imdb-config .reportChip { display: inline-flex; gap: 0.5em; align-items: center; padding: 0.35em 0.75em; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.88); font-size: 0.9em; }
+        .imdb-config .reportChipCount { opacity: 0.85; font-variant-numeric: tabular-nums; }
+        .imdb-config .reportChipText { opacity: 0.95; }
+        .imdb-config .reportChip.tone-updated { border-color: rgba(82,196,26,0.35); background: rgba(82,196,26,0.10); }
+        .imdb-config .reportChip.tone-skipped { border-color: rgba(250,173,20,0.35); background: rgba(250,173,20,0.10); }
+        .imdb-config .reportChip.tone-errors { border-color: rgba(245,34,45,0.35); background: rgba(245,34,45,0.10); }
+        .imdb-config .reportChip.tone-neutral { border-color: rgba(0,212,220,0.25); background: rgba(0,212,220,0.06); }
+        .imdb-config .reportNote { font-size: 0.85em; color: rgba(255,255,255,0.55); margin: 0.25em 0 0.75em 0; }
+
+        .imdb-config .reportFilterRow { display: flex; gap: 0.75em; align-items: center; flex-wrap: wrap; margin: 0.25em 0 1em 0; }
+        .imdb-config .reportFilterRow input { flex: 1; min-width: 240px; padding: 0.6em 0.75em; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.35); color: rgba(255,255,255,0.9); }
+        .imdb-config .reportFilterHint { font-size: 0.85em; color: rgba(255,255,255,0.5); }
+
+        .imdb-config details.reportDetails { border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.18); }
+        .imdb-config details.reportDetails + details.reportDetails { margin-top: 0.8em; }
+        .imdb-config details.reportDetails summary { cursor: pointer; padding: 0.85em 0.95em; list-style: none; display: flex; justify-content: space-between; gap: 1em; align-items: center; }
+        .imdb-config details.reportDetails summary::-webkit-details-marker { display: none; }
+        .imdb-config .reportSummaryTitle { font-size: 0.95em; color: rgba(255,255,255,0.88); }
+        .imdb-config .reportSummaryMeta { font-size: 0.85em; color: rgba(255,255,255,0.55); }
+        .imdb-config .reportSummaryActions { display: flex; gap: 0.5em; }
+        .imdb-config .reportSmallBtn { padding: 0.35em 0.7em; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); cursor: pointer; font-size: 0.85em; }
+        .imdb-config .reportSmallBtn:hover { background: rgba(255,255,255,0.10); }
+        .imdb-config .reportDetailsBody { padding: 0 0.95em 0.95em 0.95em; }
+        .imdb-config .reportList { list-style: none; padding: 0; margin: 0; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+        .imdb-config .reportListItem { padding: 0.75em 0.9em; background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; gap: 1em; }
+        .imdb-config .reportListItem:last-child { border-bottom: none; }
+        .imdb-config .reportItemName { color: rgba(255,255,255,0.92); flex: 1; }
+        .imdb-config .reportItemDetail { color: rgba(255,255,255,0.55); text-align: right; max-width: 55%; }
+        .imdb-config .reportListItem.updated .reportItemDetail { color: rgba(82,196,26,0.9); }
+        .imdb-config .reportListItem.skipped .reportItemDetail { color: rgba(250,173,20,0.95); }
+        .imdb-config .reportListItem.failure .reportItemDetail { color: rgba(245,34,45,0.95); }
+        
+        .imdb-config .tableContainer { max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; position: relative; }
+        .imdb-config .dataTable { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .imdb-config .dataTable th { text-align: left; padding: 0.75em 1em; background: rgba(0,0,0,0.85); color: rgba(255,255,255,0.8); font-weight: 500; position: sticky; top: 0; z-index: 5; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .imdb-config .dataTable td { padding: 0.6em 1em; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .imdb-config .dataTable tr:hover td { background: rgba(255,255,255,0.03); }
+        .imdb-config .dataTable tr.selected td { background: rgba(0,164,220,0.15); }
+        .imdb-config .dataTable .type-badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 3px; font-size: 0.8em; background: rgba(0,164,220,0.3); color: #00a4dc; }
+        .imdb-config .dataTable .type-badge.movie { background: rgba(156,39,176,0.3); color: #ce93d8; }
+        .imdb-config .dataTable .type-badge.series { background: rgba(0,150,136,0.3); color: #80cbc4; }
+        .imdb-config .dataTable .type-badge.episode { background: rgba(255,152,0,0.3); color: #ffcc80; }
+        .imdb-config .dataTable .missing { color: #f5222d; }
+        .imdb-config .dataTable .present { color: #52c41a; }
+        .imdb-config .emptyText { padding: 2em; text-align: center; color: rgba(255,255,255,0.4); font-style: italic; }
+        .imdb-config .loadingText { padding: 2em; text-align: center; color: rgba(255,255,255,0.5); }
+        
+        .imdb-config .hide { display: none !important; }
+    </style>
+
+    <div class="scrollSlider flex-direction-column padded-left padded-left-page padded-right padded-top-page padded-bottom-page">
+        <div class="readOnlyContent auto-center imdb-config" style="max-width: 900px;">
+
+            <div data-role="controlgroup" data-type="horizontal" class="localnav">
+                <a is="emby-linkbutton" class="nav-button ui-btn-active" href="#" data-role="button" data-target="settingsPage">
+                    <div class="navTitle">Settings</div>
+                </a>
+                <a is="emby-linkbutton" class="nav-button" href="#" data-role="button" data-target="runPage">
+                    <div class="navTitle">Run</div>
+                </a>
+                <a is="emby-linkbutton" class="nav-button" href="#" data-role="button" data-target="historyPage">
+                    <div class="navTitle">History</div>
+                </a>
+            </div>
+
+            <div class="apiCountersBar">
+                <div class="apiCountersText" id="apiCountersText">Loading API usage…</div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settingsPage" class="tabPage active">
+                <form class="imdbRefreshConfigForm">
+                    
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">API Keys</h2>
+                        <p style="margin-bottom: 1em;">Get free API keys to enable rating updates:</p>
+                        <ul style="margin-bottom: 1.5em; padding-left: 1.5em;">
+                            <li><strong>OMDb:</strong> <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" is="emby-linkbutton" class="button-link">Get free key</a></li>
+                            <li><strong>MDBList:</strong> <a href="https://mdblist.com/preferences/" target="_blank" is="emby-linkbutton" class="button-link">Get free key</a></li>
+                        </ul>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtOmdbApiKey">OMDb API Key</label>
+                            <input id="txtOmdbApiKey" type="text" is="emby-input" />
+                            <div class="fieldDescription">API key for OMDb (http://www.omdbapi.com)</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtMdbListApiKey">MDBList API Key</label>
+                            <input id="txtMdbListApiKey" type="text" is="emby-input" />
+                            <div class="fieldDescription">API key for MDBList (https://mdblist.com)</div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Rating Options</h2>
+
+                        <div class="selectContainer">
+                            <label class="selectLabel" for="selectPreferredSource">Preferred Rating Source</label>
+                            <select id="selectPreferredSource" is="emby-select">
+                                <option value="OMDb">OMDb (fallback to MDBList)</option>
+                                <option value="MDBList">MDBList (fallback to OMDb)</option>
+                                <option value="Both">Both (query simultaneously)</option>
+                            </select>
+                            <div class="fieldDescription">Choose which source to prioritize. If a rating isn't found, the other source will be tried.</div>
+                        </div>
+
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkUpdateCriticRating" />
+                            <span>Update Critic Rating (Rotten Tomatoes)</span>
+                        </label>
+                        <div class="fieldDescription" style="margin-bottom: 1.5em;">When enabled, also updates the critic rating with Rotten Tomatoes scores.</div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Item Types to Update</h2>
+                        <div class="fieldDescription" style="margin-bottom: 1em;">Select which types of media to update ratings for:</div>
+                        
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkUpdateMovies" />
+                            <span>Movies</span>
+                        </label>
+                        
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkUpdateSeries" />
+                            <span>TV Series</span>
+                        </label>
+                        
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkUpdateEpisodes" />
+                            <span>TV Episodes</span>
+                        </label>
+                        <div class="infoBox" style="margin-top: 0.5em;">
+                            <strong>Note:</strong> Episodes only use OMDb API (MDBList doesn't support episode lookups). Enabling episodes will increase OMDb API calls significantly.
+                        </div>
+                        
+                        <label class="checkboxContainer" style="margin-top: 1em;">
+                            <input type="checkbox" is="emby-checkbox" id="chkEnableImdbScraping" />
+                            <span>Enable IMDb Scraping (Episode Fallback)</span>
+                        </label>
+                        <div class="noteBox" style="margin-top: 0.5em;">
+                            <strong>⚠️ Warning:</strong> When OMDb doesn't have an episode rating, this will scrape IMDb directly. Use sparingly - excessive scraping may get your IP blocked by IMDb. Only applies to episodes.
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">API Rate Limiting</h2>
+                        <p style="margin-bottom: 1em;">Configure rate limits based on your API subscription tiers:</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em;">
+                            <div style="padding: 1em; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                <h4 style="margin: 0 0 0.75em 0;">OMDb API</h4>
+                                <label class="checkboxContainer">
+                                    <input type="checkbox" is="emby-checkbox" id="chkOmdbRateLimit" />
+                                    <span>Enable daily limit</span>
+                                </label>
+                                <div class="inputContainer" id="omdbLimitOptions" style="margin-top: 0.5em;">
+                                    <label class="inputLabel inputLabelUnfocused" for="txtOmdbDailyLimit">Daily Limit</label>
+                                    <input id="txtOmdbDailyLimit" type="number" is="emby-input" min="100" max="100000" />
+                                    <div class="fieldDescription">Free tier: 1,000/day</div>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 1em; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                <h4 style="margin: 0 0 0.75em 0;">MDBList API</h4>
+                                <label class="checkboxContainer">
+                                    <input type="checkbox" is="emby-checkbox" id="chkMdbListRateLimit" />
+                                    <span>Enable daily limit</span>
+                                </label>
+                                <div class="inputContainer" id="mdblistLimitOptions" style="margin-top: 0.5em;">
+                                    <label class="inputLabel inputLabelUnfocused" for="txtMdbListDailyLimit">Daily Limit</label>
+                                    <input id="txtMdbListDailyLimit" type="number" is="emby-input" min="100" max="100000" />
+                                    <div class="fieldDescription">Free tier: 1,000/day</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Smart Scanning</h2>
+                        <p style="margin-bottom: 1em;">Optimize scanning to focus on new content and avoid redundant API calls:</p>
+                        
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtRescanInterval">Rescan Interval (Days)</label>
+                            <input id="txtRescanInterval" type="number" is="emby-input" min="1" max="365" />
+                            <div class="fieldDescription">Skip items that have been scanned within this many days. Default: 30</div>
+                        </div>
+                        
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkPrioritizeRecent" />
+                            <span>Prioritize Recently Added Content</span>
+                        </label>
+                        
+                        <div class="inputContainer" style="margin-top: 0.5em;">
+                            <label class="inputLabel inputLabelUnfocused" for="txtRecentDays">Recently Added Period (Days)</label>
+                            <input id="txtRecentDays" type="number" is="emby-input" min="1" max="90" />
+                            <div class="fieldDescription">Items added within this period are processed first. Default: 7</div>
+                        </div>
+                        
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkSkipUnratedOnly" />
+                            <span>Only Scan Unrated Items</span>
+                        </label>
+                        <div class="fieldDescription" style="margin-bottom: 1em;">When enabled, skips items that already have a community rating.</div>
+                        
+                        <div class="infoBox">
+                            <strong>Tip:</strong> With a free API tier (1,000 requests/day), a library of 5,000 items would take ~5 days for a full scan. Smart scanning ensures newly added content gets ratings immediately.
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Testing</h2>
+                        <label class="checkboxContainer">
+                            <input type="checkbox" is="emby-checkbox" id="chkTestMode" />
+                            <span>Test Mode (Process Only One Item)</span>
+                        </label>
+                        <div class="noteBox">
+                            <strong>RECOMMENDED FOR FIRST RUN:</strong> When enabled, only processes the first item found to test if everything is working correctly. Disable this to process your entire library.
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <button is="emby-button" type="submit" class="raised button-submit block">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Run Tab -->
+            <div id="runPage" class="tabPage">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Run Rating Refresh</h2>
+                    <p style="margin-bottom: 1.5em;">Manually trigger a rating refresh. Select specific items or run on your entire library.</p>
+                    
+                    <!-- Library Selection -->
+                    <div class="selectionGrid" style="grid-template-columns: 1fr;">
+                        <div class="selectionBox">
+                            <h4>📚 Library</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectLibrary" is="emby-select">
+                                    <option value="">All Libraries</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- TV Show Selection (hidden for movies) -->
+                    <div id="tvShowSelection" class="selectionGrid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="selectionBox">
+                            <h4>📺 TV Series</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectSeries" is="emby-select" disabled>
+                                    <option value="">All Series</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="selectionBox">
+                            <h4>📅 Season</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectSeason" is="emby-select" disabled>
+                                    <option value="">All Seasons</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="selectionBox">
+                            <h4>🎬 Episode</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectEpisode" is="emby-select" disabled>
+                                    <option value="">All Episodes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Selection (hidden for TV shows) -->
+                    <div id="movieSelection" class="selectionGrid hide" style="grid-template-columns: 1fr;">
+                        <div class="selectionBox">
+                            <h4>🎬 Movie</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectMovie" is="emby-select" disabled>
+                                    <option value="">All Movies</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Selection (applies to All Series / All Movies) -->
+                    <div id="addedWithinSelection" class="selectionGrid hide" style="grid-template-columns: 1fr;">
+                        <div class="selectionBox">
+                            <h4>🗓 Added Within</h4>
+                            <div class="selectContainer" style="margin-bottom: 0;">
+                                <select id="selectAddedWithin" is="emby-select">
+                                    <option value="0">All time</option>
+                                    <option value="1">Today</option>
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30">Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                    <option value="365">Last 365 days</option>
+                                </select>
+                            </div>
+                            <div class="fieldDescription">Filters "All Movies" / "All Series" runs to only items added in that period.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progressHeader" style="margin-bottom: 1em;">
+                        <div style="display: flex; align-items: center; gap: 1em;">
+                            <div class="statusBadge idle" id="statusBadge">
+                                <span class="statusDot"></span>
+                                <span id="statusText">Ready</span>
+                            </div>
+                            <div class="etaBox hide" id="etaBox">
+                                <span class="etaLabel">ETA:</span>
+                                <span id="etaValue">--:--</span>
+                            </div>
+                        </div>
+                        <div id="elapsedTime" style="font-size: 0.85em; color: rgba(255,255,255,0.5);"></div>
+                    </div>
+
+                    <div class="buttonGroup">
+                        <button is="emby-button" type="button" id="btnRunRefresh" class="raised btn-primary">
+                            <span>▶ Start Refresh</span>
+                        </button>
+                        <button is="emby-button" type="button" id="btnCancelRefresh" class="raised btn-danger hide">
+                            <span>■ Stop</span>
+                        </button>
+                        <button is="emby-button" type="button" id="btnClearResults" class="raised btn-secondary">
+                            <span>Clear Results</span>
+                        </button>
+                    </div>
+
+                    <div class="progressSection" id="progressSection">
+                        <div class="currentItemBox hide" id="currentItemBox">
+                            <div class="currentItemLabel">Currently Processing</div>
+                            <div class="currentItemName" id="currentItem">-</div>
+                        </div>
+                        
+                        <div class="progressBar">
+                            <div class="progressBarFill" id="progressBarFill" style="width: 0%;"></div>
+                            <div class="progressBarText" id="progressBarText">0%</div>
+                        </div>
+
+                        <div class="statsGrid">
+                            <div class="statBox">
+                                <div class="statNumber" id="statProcessed">0</div>
+                                <div class="statLabel">Processed</div>
+                            </div>
+                            <div class="statBox updated">
+                                <div class="statNumber" id="statUpdated">0</div>
+                                <div class="statLabel">Updated</div>
+                            </div>
+                            <div class="statBox skipped">
+                                <div class="statNumber" id="statSkipped">0</div>
+                                <div class="statLabel">Skipped</div>
+                            </div>
+                            <div class="statBox errors">
+                                <div class="statNumber" id="statErrors">0</div>
+                                <div class="statLabel">Errors</div>
+                            </div>
+                        </div>
+
+                        <div class="resultSection">
+                            <div class="resultTabs">
+                                <button type="button" class="resultTab success active" data-target="updatedList">
+                                    Updated <span class="badge" id="updatedBadge">0</span>
+                                </button>
+                                <button type="button" class="resultTab skipped" data-target="skippedList">
+                                    Skipped <span class="badge" id="skippedBadge">0</span>
+                                </button>
+                                <button type="button" class="resultTab failure" data-target="failureList">
+                                    Failures <span class="badge" id="failureBadge">0</span>
+                                </button>
+                            </div>
+                            <div class="resultContainer">
+                                <ul class="resultList" id="updatedList">
+                                    <li class="resultEmpty">No items updated yet</li>
+                                </ul>
+                                <ul class="resultList hide" id="skippedList">
+                                    <li class="resultEmpty">No items skipped yet</li>
+                                </ul>
+                                <ul class="resultList hide" id="failureList">
+                                    <li class="resultEmpty">No failures</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="verticalSection" style="margin-top: 2em; padding-top: 1.5em; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h3>Scheduled Task</h3>
+                    <p>This task also runs automatically every day at 3:00 AM. You can view or modify the schedule in <strong>Scheduled Tasks</strong> under server settings.</p>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyPage" class="tabPage">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Scan History</h2>
+                    <p style="margin-bottom: 1.5em;">View past scans and search your library for items with missing data.</p>
+                    
+                    <!-- Recent Scans Section -->
+                    <div class="historySection">
+                        <h3>Recent Scans</h3>
+                        <div class="sessionList" id="sessionList">
+                            <p class="loadingText">Loading scan history...</p>
+                        </div>
+
+                        <div class="rs-modal hide" id="scanReportModal" role="dialog" aria-modal="true" aria-labelledby="scanReportTitle">
+                            <div class="rs-modal-backdrop" id="scanReportBackdrop"></div>
+                            <div class="rs-modal-content">
+                                <div class="rs-modal-header">
+                                    <h3 class="rs-modal-title" id="scanReportTitle">Scan Report</h3>
+                                    <div class="rs-modal-actions">
+                                        <button is="emby-button" type="button" id="btnCopyScanReport" class="raised btn-secondary">Copy</button>
+                                        <button is="emby-button" type="button" id="btnDeleteScan" class="raised btn-secondary">Delete</button>
+                                        <button is="emby-button" type="button" id="btnCloseScanReport" class="raised btn-secondary">Close</button>
+                                    </div>
+                                </div>
+                                <div class="rs-modal-body" id="scanReportBody"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Missing Data Section -->
+                    <div class="historySection" style="margin-top: 2em;">
+                        <h3>Items Missing Data</h3>
+                        <div style="display: flex; gap: 1em; margin-bottom: 1em; flex-wrap: wrap; align-items: center;">
+                            <div class="selectContainer" style="margin-bottom: 0; flex: 0 0 auto;">
+                                <select id="missingDataType" is="emby-select" style="min-width: 150px;">
+                                    <option value="">All Types</option>
+                                    <option value="movies">Movies</option>
+                                    <option value="series">Series</option>
+                                    <option value="episodes">Episodes</option>
+                                </select>
+                            </div>
+                            <div class="selectContainer" style="margin-bottom: 0; flex: 0 0 auto;">
+                                <select id="missingDataIssue" is="emby-select" style="min-width: 190px;">
+                                    <option value="">All Missing</option>
+                                    <option value="imdb">No IMDb ID</option>
+                                    <option value="community">No Community Rating</option>
+                                    <option value="critic">No Critic Rating</option>
+                                </select>
+                            </div>
+                            <button is="emby-button" type="button" id="btnLoadMissing" class="raised btn-secondary">
+                                <span>🔍 Find Missing</span>
+                            </button>
+                            <button is="emby-button" type="button" id="btnScanMissingSelected" class="raised btn-primary" disabled>
+                                <span>▶ Scan Selected</span>
+                            </button>
+                        </div>
+                        <div class="fieldDescription" style="margin: -0.5em 0 1em 0;">Tip: click a row to select it, then click "Scan Selected".</div>
+                        <div class="tableContainer" id="missingDataContainer">
+                            <p class="emptyText">Click "Find Missing" to search for items without IMDb IDs or ratings.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item History Search Section -->
+                    <div class="historySection" style="margin-top: 2em;">
+                        <h3>Item Scan History</h3>
+                        <div style="display: flex; gap: 1em; margin-bottom: 1em; flex-wrap: wrap; align-items: center;">
+                            <div class="inputContainer" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                                <input id="txtItemSearch" type="text" is="emby-input" placeholder="Search by item name..." />
+                            </div>
+                            <button is="emby-button" type="button" id="btnSearchHistory" class="raised btn-secondary">
+                                <span>🔍 Search</span>
+                            </button>
+                        </div>
+                        <div class="tableContainer" id="itemHistoryContainer">
+                            <p class="emptyText">Search for items to see their scan history.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

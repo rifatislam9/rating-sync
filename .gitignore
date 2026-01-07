@@ -1,0 +1,24 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+
+## VS / Rider / user-specific
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+## Diagnostics
+*.log
+
+## NuGet
+*.nupkg
+packages/
+.nuget/
+
+## OS
+Thumbs.db
+.DS_Store

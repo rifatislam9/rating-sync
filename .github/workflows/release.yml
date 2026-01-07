@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Compute version
+        id: ver
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        shell: pwsh
+        run: |
+          dotnet build -c Release --no-restore -p:Version="${{ steps.ver.outputs.version }}"
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $outDir = Join-Path $PWD "bin\Release"
+          $dll = Join-Path $outDir "RatingSync.dll"
+          if (!(Test-Path $dll)) { throw "Missing build output: $dll" }
+          $zip = Join-Path $PWD ("RatingSync-" + "${{ steps.ver.outputs.tag }}" + ".zip")
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path $dll -DestinationPath $zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          files: |
+            bin/Release/RatingSync.dll
+            RatingSync-${{ steps.ver.outputs.tag }}.zip
+          generate_release_notes: true
