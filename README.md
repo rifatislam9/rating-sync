@@ -20,6 +20,7 @@
 
 <p align="center">
 	<a href="https://github.com/pejamas/rating-sync/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/pejamas/rating-sync/actions/workflows/ci.yml/badge.svg" /></a>
+	<a href="https://github.com/pejamas/rating-sync/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/pejamas/rating-sync/total" /></a>
 	<a href="https://github.com/pejamas/rating-sync/releases"><img alt="Tag" src="https://img.shields.io/github/v/tag/pejamas/rating-sync?sort=semver" /></a>
 	<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/pejamas/rating-sync" /></a>
 </p>
