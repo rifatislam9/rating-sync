@@ -66,7 +66,35 @@ jobs:
           $version = "${{ steps.ver.outputs.version }}"
           $isPrerelease = $version.Contains('-')
           $channel = if ($isPrerelease) { "Beta" } else { "Release" }
-          $changes = if ($isPrerelease) { "Initial public beta." } else { "Initial public release." }
+
+          $changesBlock = ""
+          $changelogPath = Join-Path $PWD "CHANGELOG.md"
+          if (Test-Path $changelogPath) {
+            $lines = Get-Content $changelogPath
+            $escaped = [regex]::Escape($version)
+            $start = -1
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+              if ($lines[$i] -match "^##\s+\[$escaped\]\b") { $start = $i; break }
+            }
+
+            if ($start -ge 0) {
+              $body = New-Object System.Collections.Generic.List[string]
+              for ($j = $start + 1; $j -lt $lines.Count; $j++) {
+                if ($lines[$j] -match '^##\s+\[') { break }
+                $body.Add($lines[$j])
+              }
+              $trimmed = $body | Where-Object { $_ -and $_.Trim() -ne '' }
+              if ($trimmed.Count -gt 0) {
+                $changesBlock = ($trimmed -join "`n")
+              }
+            }
+          }
+
+          if ([string]::IsNullOrWhiteSpace($changesBlock)) {
+            $changesBlock = "- See CHANGELOG.md for details."
+          }
+
+          $notesExtra = if ($isPrerelease) { "- **Beta builds** may change behavior/config defaults; please report issues." } else { "" }
 
           @"
           # Rating Sync $tag ($channel)
@@ -84,11 +112,11 @@ jobs:
           4. Configure API keys in Emby Dashboard → Plugins → Rating Sync.
 
           ## Notes
-          - **Beta builds** may change behavior/config defaults; please report issues.
+          $notesExtra
           - See the README for details.
 
           ## Changes
-          - $changes
+          $changesBlock
           "@ | Out-File -FilePath "release-notes.md" -Encoding utf8
 
       - name: Publish GitHub Release
