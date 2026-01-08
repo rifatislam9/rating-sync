@@ -1592,6 +1592,9 @@ namespace RatingSync
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
 
+        private static readonly object _imdbEpisodeCacheLock = new object();
+        private static readonly Dictionary<string, Dictionary<int, string>> _imdbEpisodeIdCache = new Dictionary<string, Dictionary<int, string>>();
+
         public RatingRefreshTask(ILibraryManager libraryManager, ILogManager logManager, IJsonSerializer jsonSerializer)
         {
             _libraryManager = libraryManager;
@@ -1842,12 +1845,6 @@ namespace RatingSync
                                     SeriesName = series.Name
                                 };
                                 itemName = $"{series.Name} S{episodeInfo.SeasonNumber:D2}E{episodeInfo.EpisodeNumber:D2} - {item.Name}";
-                                
-                                // If episode has no direct IMDb ID, we'll use episode info for lookup
-                                if (string.IsNullOrEmpty(imdbId))
-                                {
-                                    imdbId = seriesImdbId; // Use series ID as fallback for logging
-                                }
                             }
                         }
                         
@@ -1866,7 +1863,10 @@ namespace RatingSync
 
                     try
                     {
-                        Log($"Processing: {itemName} ({imdbId})", "info");
+                        var logImdbId = !string.IsNullOrWhiteSpace(imdbId)
+                            ? imdbId
+                            : (episodeInfo != null ? episodeInfo.SeriesImdbId : "");
+                        Log($"Processing: {itemName} ({logImdbId})", "info");
                         
                         var ratings = await FetchRatings(imdbId, config, episodeInfo, currentHasOmdb, currentHasMdbList);
                         
@@ -2093,10 +2093,21 @@ namespace RatingSync
                 }
                 
                 // Fallback: Scrape IMDb directly if enabled and no rating found
-                if (!result.CommunityRating.HasValue && config.EnableImdbScraping && !string.IsNullOrEmpty(imdbId))
+                if (!result.CommunityRating.HasValue && config.EnableImdbScraping)
                 {
                     result.ImdbScrapeAttempted = true;
-                    var scrapedRating = await ScrapeImdbRating(imdbId);
+                    float? scrapedRating = null;
+
+                    // Prefer scraping an explicit episode IMDb id if Emby provides it.
+                    if (!string.IsNullOrWhiteSpace(imdbId))
+                    {
+                        scrapedRating = await ScrapeImdbRating(imdbId);
+                    }
+                    else
+                    {
+                        // If Emby doesn't provide episode IDs, derive the episode title id from the series episodes page.
+                        scrapedRating = await ScrapeImdbEpisodeRating(episodeInfo);
+                    }
                     if (scrapedRating.HasValue)
                     {
                         result.CommunityRating = scrapedRating;
@@ -2335,6 +2346,9 @@ namespace RatingSync
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(imdbId))
+                    return null;
+
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(10);
@@ -2348,22 +2362,41 @@ namespace RatingSync
                         return null;
                     
                     var html = await response.Content.ReadAsStringAsync();
+
+                    // Prefer parsing near the requested tconst to avoid accidentally capturing a parent series rating
+                    // that may also be embedded on an episode page.
+                    string scopedHtml = html;
+                    try
+                    {
+                        var tconstNeedle = $"\"tconst\":\"{imdbId}\"";
+                        var idx = html.IndexOf(tconstNeedle, StringComparison.Ordinal);
+                        if (idx >= 0)
+                        {
+                            var start = Math.Max(0, idx - 2000);
+                            var length = Math.Min(html.Length - start, 25000);
+                            scopedHtml = html.Substring(start, length);
+                        }
+                    }
+                    catch
+                    {
+                        scopedHtml = html;
+                    }
                     
                     // Pattern 1 (BEST): Look for ratingsSummary with aggregateRating - most reliable for episodes
                     // Format: "ratingsSummary":{"aggregateRating":6.7 or "ratingsSummary":{"topRanking":null,...,"aggregateRating":6.7
-                    var match = System.Text.RegularExpressions.Regex.Match(html, @"""ratingsSummary""[^}]*""aggregateRating""\s*:\s*([\d.]+)");
+                    var match = System.Text.RegularExpressions.Regex.Match(scopedHtml, @"""ratingsSummary""[^}]*""aggregateRating""\s*:\s*([\d.]+)");
                     
                     // Pattern 2: JSON-LD AggregateRating object - "AggregateRating"..."ratingValue":8.5
                     // This is used for movies/shows with full JSON-LD structured data
                     if (!match.Success)
                     {
-                        match = System.Text.RegularExpressions.Regex.Match(html, @"""AggregateRating""[^}]*""ratingValue""\s*:\s*([\d.]+)");
+                        match = System.Text.RegularExpressions.Regex.Match(scopedHtml, @"""AggregateRating""[^}]*""ratingValue""\s*:\s*([\d.]+)");
                     }
                     
                     // Pattern 3: Fallback - aggregateRating as standalone object (not in ratingsSummary)
                     if (!match.Success)
                     {
-                        match = System.Text.RegularExpressions.Regex.Match(html, @"""aggregateRating""\s*:\s*\{[^}]*""ratingValue""\s*:\s*([\d.]+)");
+                        match = System.Text.RegularExpressions.Regex.Match(scopedHtml, @"""aggregateRating""\s*:\s*\{[^}]*""ratingValue""\s*:\s*([\d.]+)");
                     }
                     
                     if (match.Success && float.TryParse(match.Groups[1].Value, 
@@ -2388,6 +2421,139 @@ namespace RatingSync
                 // Scraping error - ignore
             }
             
+            return null;
+        }
+
+        private async Task<float?> ScrapeImdbEpisodeRating(EpisodeInfo episodeInfo)
+        {
+            try
+            {
+                if (episodeInfo == null)
+                    return null;
+                if (string.IsNullOrWhiteSpace(episodeInfo.SeriesImdbId))
+                    return null;
+                if (episodeInfo.SeasonNumber <= 0 || episodeInfo.EpisodeNumber <= 0)
+                    return null;
+
+                var episodeImdbId = await TryResolveEpisodeImdbIdFromSeriesEpisodesPage(
+                    episodeInfo.SeriesImdbId,
+                    episodeInfo.SeasonNumber,
+                    episodeInfo.EpisodeNumber);
+
+                if (string.IsNullOrWhiteSpace(episodeImdbId))
+                    return null;
+
+                // Now scrape the episode title page.
+                return await ScrapeImdbRating(episodeImdbId);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task<string> TryResolveEpisodeImdbIdFromSeriesEpisodesPage(string seriesImdbId, int seasonNumber, int episodeNumber)
+        {
+            try
+            {
+                var cacheKey = seriesImdbId + "|S" + seasonNumber;
+                lock (_imdbEpisodeCacheLock)
+                {
+                    if (_imdbEpisodeIdCache.TryGetValue(cacheKey, out var cachedMap)
+                        && cachedMap != null
+                        && cachedMap.TryGetValue(episodeNumber, out var cachedId)
+                        && !string.IsNullOrWhiteSpace(cachedId))
+                    {
+                        return cachedId;
+                    }
+                }
+
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                    client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+
+                    var url = $"https://www.imdb.com/title/{seriesImdbId}/episodes?season={seasonNumber}";
+                    var response = await client.GetAsync(url);
+                    if (!response.IsSuccessStatusCode)
+                        return null;
+
+                    var html = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(html))
+                        return null;
+
+                    // Parse and cache all episode ids for this season in one pass.
+                    // Example link: /title/tt39306204/?ref_=ttep_ep_1
+                    var map = new Dictionary<int, string>();
+                    var all = System.Text.RegularExpressions.Regex.Matches(
+                        html,
+                        "href\\s*=\\s*\\\"/title/(?<id>tt\\d{7,8})/\\?ref_=ttep_ep_(?<ep>\\d+)\\b",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    foreach (System.Text.RegularExpressions.Match m in all)
+                    {
+                        if (!m.Success) continue;
+                        if (!int.TryParse(m.Groups["ep"].Value, out var epNum)) continue;
+                        var id = m.Groups["id"].Value;
+                        if (epNum > 0 && !string.IsNullOrWhiteSpace(id))
+                            map[epNum] = id;
+                    }
+
+                    if (map.Count > 0)
+                    {
+                        lock (_imdbEpisodeCacheLock)
+                        {
+                            if (_imdbEpisodeIdCache.Count > 200)
+                                _imdbEpisodeIdCache.Clear();
+                            _imdbEpisodeIdCache[cacheKey] = map;
+                        }
+
+                        if (map.TryGetValue(episodeNumber, out var found) && !string.IsNullOrWhiteSpace(found))
+                            return found;
+                    }
+
+                    // Preferred: links contain ref_=ttep_ep_{N} for the episode card.
+                    var epRefNeedles = new[] { $"ttep_ep_{episodeNumber}", $"ttep_ep{episodeNumber}" };
+                    foreach (var epRefNeedle in epRefNeedles)
+                    {
+                        var pattern = "href\\s*=\\s*\\\"/title/(?<id>tt\\d{7,8})/\\?ref_="
+                            + System.Text.RegularExpressions.Regex.Escape(epRefNeedle)
+                            + "[^\\\"]*\\\"";
+                        var match = System.Text.RegularExpressions.Regex.Match(
+                            html,
+                            pattern,
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                        if (match.Success)
+                            return match.Groups["id"].Value;
+                    }
+
+                    // Fallback: sometimes the ref format changes; try finding a title id on the same line/near the episode ref.
+                    foreach (var epRefNeedle in epRefNeedles)
+                    {
+                        var idx = html.IndexOf(epRefNeedle, StringComparison.OrdinalIgnoreCase);
+                        if (idx >= 0)
+                        {
+                            var start = Math.Max(0, idx - 1000);
+                            var length = Math.Min(html.Length - start, 3000);
+                            var window = html.Substring(start, length);
+
+                            var match = System.Text.RegularExpressions.Regex.Match(
+                                window,
+                                @"/title/(?<id>tt\d{7,8})/",
+                                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                            if (match.Success)
+                                return match.Groups["id"].Value;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
             return null;
         }
 

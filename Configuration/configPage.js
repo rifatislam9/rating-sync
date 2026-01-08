@@ -98,11 +98,11 @@ function (BaseView, loading, toast) {
 
             var html = '';
             if (todayLabel) {
-                html += '<span style="opacity:0.78;margin-right:0.6em">' + this.escapeHtml('API usage — ' + todayLabel) + '</span>';
+                html += '<span style="opacity:0.78;margin-right:0.6em">' + this.escapeHtml('API usage — ' + todayLabel + ' (resets 00:00 UTC)') + '</span>';
             } else if (today) {
-                html += '<span style="opacity:0.78;margin-right:0.6em">API usage — today</span>';
+                html += '<span style="opacity:0.78;margin-right:0.6em">API usage — today (resets 00:00 UTC)</span>';
             } else {
-                html += '<span style="opacity:0.78;margin-right:0.6em">API usage</span>';
+                html += '<span style="opacity:0.78;margin-right:0.6em">API usage (resets 00:00 UTC)</span>';
             }
             html += '<span class="apiBadge"><span class="apiDot omdb"></span><span>' + this.escapeHtml(omdbText) + '</span></span>';
             html += '<span class="apiBadge"><span class="apiDot mdblist"></span><span>' + this.escapeHtml(mdbText) + '</span></span>';
